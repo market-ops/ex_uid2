@@ -1,7 +1,12 @@
 defmodule ExUid2.Encryption.Identity do
   alias ExUid2.Keyring.Key
 
-  @type t :: %__MODULE__{site_id: non_neg_integer(), id_len: non_neg_integer(), id_bin: binary(), established_ms: non_neg_integer()}
+  @type t :: %__MODULE__{
+          site_id: non_neg_integer(),
+          id_len: non_neg_integer(),
+          id_bin: binary(),
+          established_ms: non_neg_integer()
+        }
 
   defstruct [
     :site_id,
@@ -10,7 +15,7 @@ defmodule ExUid2.Encryption.Identity do
     :established_ms
   ]
 
-  @spec decrypt(binary(), Key.t, <<_::128>>) :: {:ok, t()} | {:error, :invalid_identity_payload}
+  @spec decrypt(binary(), Key.t(), <<_::128>>) :: {:ok, t()} | {:error, :invalid_identity_payload}
   def decrypt(payload, key, iv) do
     :crypto.crypto_one_time(:aes_256_cbc, key.secret, iv, payload, false)
     |> parse()
@@ -18,9 +23,9 @@ defmodule ExUid2.Encryption.Identity do
 
   @spec parse(any()) :: {:error, :invalid_identity} | {:ok, t()}
   def parse(
-    <<site_id::big-integer-32, id_len::big-integer-32, id_bin::binary-size(id_len),
-      _::binary-size(4), established_ms::big-integer-64, _::binary>>
-  ) do
+        <<site_id::big-integer-32, id_len::big-integer-32, id_bin::binary-size(id_len),
+          _::binary-size(4), established_ms::big-integer-64, _::binary>>
+      ) do
     {
       :ok,
       %__MODULE__{

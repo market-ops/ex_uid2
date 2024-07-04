@@ -37,6 +37,7 @@ defmodule ExUid2.Keyring do
       :site_data,
       :token_expiry_seconds
     ]
+
     def new(keyring_map) do
       %__MODULE__{
         identity_scope: keyring_map["identity_scope"],
@@ -46,15 +47,15 @@ defmodule ExUid2.Keyring do
         token_expiry_seconds: keyring_map["token_expiry_seconds"]
       }
     end
-
   end
 
   def new(%{"keys" => raw_keys} = keyring_map) when not is_nil(raw_keys) do
     keys = Enum.map(raw_keys, fn raw_key -> Key.new(raw_key) end)
+
     %__MODULE__{
       keys: keys,
       info: Info.new(keyring_map)
-      }
+    }
   end
 
   def get_key(%__MODULE__{} = keyring, id) do
