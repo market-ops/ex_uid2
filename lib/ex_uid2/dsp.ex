@@ -33,14 +33,18 @@ defmodule ExUid2.Dsp do
   end
 
   # TODO: figure the right specs for keys
-  def get_keys() do
+  def get_keyring() do
     [{@keyring, keys}] = :ets.lookup(@table_name, @keyring)
     keys
   end
 
-  def decrypt_token(token) do
-    keys = get_keys()
-    decrypt_token(token, keys)
+  def decrypt_token(token, now_ms \\ :os.system_time(:millisecond)) do
+    keyring = get_keyring()
+    # TODO: validate keys (see encryption.py)
+
+    token
+    |> :base64.decode()
+    |> Encryption.decrypt_v2_token(keyring, now_ms)
   end
 
   defp fetch_keyring() do
@@ -58,26 +62,4 @@ defmodule ExUid2.Dsp do
 
     ExUid2.Dsp.Keyring.new(raw_body)
   end
-
-  def decrypt_token(token, keyring, ts \\ :os.system_time(:millisecond)) do
-    # TODO: validate keys (see encryption.py)
-    # decoded_token_bytes = :base64.decode(token_bytes_bin)
-    # IO.inspect(decoded_token_bytes: decoded_token_bytes)
-    # TODO: verify that token_bytes = 2 for v2
-
-    decoded_token = :base64.decode(token)
-
-    <<version::big-integer-8, _::binary>> = decoded_token
-
-    case version do
-      2 ->
-        Encryption.decrypt_v2_token(decoded_token, keyring, ts)
-
-      _ ->
-        {:error, :unsupported_version}
-    end
-  end
-
-
-
 end
