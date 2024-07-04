@@ -2,8 +2,7 @@ defmodule ExUid2.Encryption do
   alias ExUid2.DecryptedToken
   alias ExUid2.Keyring
 
-
-
+  @spec decrypt_v2_token(binary(), Keyring.t(), integer()) :: DecryptedToken.t() | {:error, any()}
   def decrypt_v2_token(
     token_bin,
     keyring,

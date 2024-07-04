@@ -36,21 +36,24 @@ defmodule ExUid2.Keyring do
       :site_data,
       :token_expiry_seconds
     ]
+    def new(keyring_map) do
+      %__MODULE__{
+        identity_scope: keyring_map["identity_scope"],
+        caller_site_id: keyring_map["caller_site_id"],
+        master_keyset_id: keyring_map["master_keyset_id"],
+        site_data: keyring_map["site_data"],
+        token_expiry_seconds: keyring_map["token_expiry_seconds"]
+      }
+    end
+
   end
 
-  def new(%{"keys" => raw_keys} = keys_map) when not is_nil(raw_keys) do
+  def new(%{"keys" => raw_keys} = keyring_map) when not is_nil(raw_keys) do
     keys = Enum.map(raw_keys, fn raw_key -> Key.new(raw_key) end)
-
     %__MODULE__{
       keys: keys,
-      info: %Info{
-        identity_scope: keys_map["identity_scope"],
-        caller_site_id: keys_map["caller_site_id"],
-        master_keyset_id: keys_map["master_keyset_id"],
-        site_data: keys_map["site_data"],
-        token_expiry_seconds: keys_map["token_expiry_seconds"]
+      info: Info.new(keyring_map)
       }
-    }
   end
 
   def get_key(%__MODULE__{} = keyring, id) do

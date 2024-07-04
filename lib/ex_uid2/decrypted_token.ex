@@ -1,4 +1,5 @@
 defmodule ExUid2.DecryptedToken do
+  @type t :: %__MODULE__{}
   defstruct [
     :uid,
     :established,
