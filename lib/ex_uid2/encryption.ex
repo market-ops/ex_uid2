@@ -1,5 +1,8 @@
 defmodule ExUid2.Encryption do
-  alias ExUid2.DecryptedToken
+  alias ExUid2.Encryption.EncryptedToken
+  alias ExUid2.Encryption.DecryptedIdentity
+  alias ExUid2.Encryption.DecryptedMasterPayload
+  alias ExUid2.Uid2
   alias ExUid2.Keyring
 
   @spec decrypt_v2_token(binary(), Keyring.t(), integer()) :: DecryptedToken.t() | {:error, any()}
@@ -17,7 +20,7 @@ defmodule ExUid2.Encryption do
          {:site_key, {:ok, site_key}} <- {:site_key, Keyring.get_key(keyring, master_payload.site_key_id)},
          {:decrypted_identity, decrypted_identity} <- {:decrypted_identity, decrypt(site_key, master_payload.identity_iv, master_payload.identity_payload)},
          {:parse_identity, {:ok, identity}} <- {:parse_identity, parse_identity(decrypted_identity)} do
-      %DecryptedToken{
+      %Uid2{
         uid: identity.id_bin,
         established: DateTime.from_unix!(identity.established_ms, :millisecond),
         site_id: identity.site_id,
@@ -40,7 +43,7 @@ defmodule ExUid2.Encryption do
     <<version::big-integer-8, master_key_id::big-integer-32, master_iv::big-binary-size(16),
           master_payload::binary>>
   ) do
-    {:ok, %{
+    {:ok, %EncryptedToken{
       version: version,
       master_key_id: master_key_id,
       master_iv: master_iv,
@@ -58,7 +61,7 @@ defmodule ExUid2.Encryption do
   ) do
   {
     :ok,
-    %{
+    %DecryptedIdentity{
       site_id: site_id,
       id_len: id_len,
       id_bin: id_bin,
@@ -77,7 +80,7 @@ defmodule ExUid2.Encryption do
     ) do
     {
       :ok,
-      %{
+      %DecryptedMasterPayload{
         expires_ms: expires_ms,
         site_key_id: site_key_id,
         identity_iv: identity_iv,
