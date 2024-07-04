@@ -7,6 +7,7 @@ defmodule ExUid2.Keyring do
   ]
 
   defmodule Key do
+    @type t :: %__MODULE__{}
     defstruct [
       :activates,
       :created,

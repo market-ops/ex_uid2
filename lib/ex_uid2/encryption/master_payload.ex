@@ -1,4 +1,6 @@
-defmodule ExUid2.Encryption.DecryptedMasterPayload do
+defmodule ExUid2.Encryption.MasterPayload do
+  alias ExUid2.Keyring.Key
+
   @type t :: %__MODULE__{expires_ms: non_neg_integer(), site_key_id: non_neg_integer(), identity_iv: <<_::128>>, identity_payload: binary()}
 
   defstruct [
@@ -8,9 +10,15 @@ defmodule ExUid2.Encryption.DecryptedMasterPayload do
     :identity_payload
   ]
 
-  @spec parse_master_payload(any()) ::
-          {:error, :invalid_master_payload} | {:ok, ExUid2.Encryption.DecryptedMasterPayload.t()}
-  def parse_master_payload(
+  @spec decrypt(binary(), Key.t, <<_::128>>) :: {:ok, t()} | {:error, :invalid_master_payload}
+  def decrypt(payload, key, iv) do
+    :crypto.crypto_one_time(:aes_256_cbc, key.secret, iv, payload, false)
+    |> parse()
+  end
+
+  @spec parse(binary()) ::
+          {:error, :invalid_master_payload} | {:ok, t()}
+  def parse(
     <<expires_ms::big-integer-64, site_key_id::big-integer-32,
       identity_iv::big-binary-size(16), identity_payload::binary>>
     ) do
@@ -25,5 +33,5 @@ defmodule ExUid2.Encryption.DecryptedMasterPayload do
     }
   end
 
-  def parse_master_payload(_), do: {:error, :invalid_master_payload}
+  def parse(_), do: {:error, :invalid_master_payload}
 end
