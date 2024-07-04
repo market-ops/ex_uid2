@@ -117,16 +117,32 @@ defmodule ExUid2.Dsp do
     {:error, :invalid_identity}
   end
 
+  defp parse_v2_token(
+    <<version::big-integer-8, master_key_id::big-integer-32, master_iv::big-binary-size(16),
+          master_payload::binary>>
+  ) do
+    {:ok, %{
+      version: version,
+      master_key_id: master_key_id,
+      master_iv: master_iv,
+      master_payload: master_payload
+    }}
+  end
+
+  defp parse_v2_token(_) do
+    {:error, :invalid_token}
+  end
+
   def decrypt_v2_token(
-        <<version::big-integer-8, master_key_id::big-integer-32, master_iv::big-binary-size(16),
-          master_payload::binary>> = _token,
+        token_bin,
         keyring,
-        now
+        now_ms
       ) do
-    with {:master_key, {:ok, master_key}} <- {:master_key, Keyring.get_key(keyring, master_key_id)},
-         {:decrypted_master_payload, decrypted_master_payload} <- {:decrypted_master_payload, decrypt(master_key, master_iv, master_payload)},
+    with {:parsed_v2_token, {:ok, token}} <- {:parsed_v2_token, parse_v2_token(token_bin)},
+         {:master_key, {:ok, master_key}} <- {:master_key, Keyring.get_key(keyring, token.master_key_id)},
+         {:decrypted_master_payload, decrypted_master_payload} <- {:decrypted_master_payload, decrypt(master_key, token.master_iv, token.master_payload)},
          {:parsed_master_payload, {:ok, master_payload}} <- {:parsed_master_payload, parse_master_payload(decrypted_master_payload)},
-         {:expired?, false} <- {:expired?, now < master_payload.expires_ms},
+         {:expired?, false} <- {:expired?, now_ms < master_payload.expires_ms},
          {:site_key, {:ok, site_key}} <- {:site_key, Keyring.get_key(keyring, master_payload.site_key_id)},
          {:decrypted_identity, decrypted_identity} <- {:decrypted_identity, decrypt(site_key, master_payload.identity_iv, master_payload.identity_payload)},
          {:parse_identity, {:ok, identity}} <- {:parse_identity, parse_identity(decrypted_identity)} do
@@ -137,7 +153,7 @@ defmodule ExUid2.Dsp do
         site_key: site_key,
         identity_scope: keyring.info.identity_scope,
         identity_type: nil,
-        advertising_token_version: version,
+        advertising_token_version: token.version,
         expires: DateTime.from_unix!(master_payload.expires_ms, :millisecond)
       }
     else
