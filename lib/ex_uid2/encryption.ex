@@ -1,6 +1,6 @@
 defmodule ExUid2.Encryption do
   alias ExUid2.DecryptedToken
-  alias ExUid2.Dsp.Keyring
+  alias ExUid2.Keyring
 
 
 

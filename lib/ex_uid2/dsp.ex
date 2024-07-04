@@ -1,5 +1,6 @@
 defmodule ExUid2.Dsp do
   alias ExUid2.Encryption
+  alias ExUid2.Keyring
   use GenServer
 
   @table_name __MODULE__
@@ -32,10 +33,10 @@ defmodule ExUid2.Dsp do
     {:noreply, state}
   end
 
-  # TODO: figure the right specs for keys
+  @spec get_keyring() :: Keyring.t()
   def get_keyring() do
-    [{@keyring, keys}] = :ets.lookup(@table_name, @keyring)
-    keys
+    [{@keyring, keyring}] = :ets.lookup(@table_name, @keyring)
+    keyring
   end
 
   def decrypt_token(token, now_ms \\ :os.system_time(:millisecond)) do
@@ -60,6 +61,6 @@ defmodule ExUid2.Dsp do
 
     raw_body = Map.get(response, "body")
 
-    ExUid2.Dsp.Keyring.new(raw_body)
+    Keyring.new(raw_body)
   end
 end

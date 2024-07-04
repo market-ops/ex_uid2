@@ -1,4 +1,6 @@
-defmodule ExUid2.Dsp.Keyring do
+defmodule ExUid2.Keyring do
+  @type t :: %__MODULE__{}
+
   defstruct [
     :keys,
     :info
