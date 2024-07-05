@@ -1,6 +1,7 @@
 defmodule ExUid2.Dsp do
   alias ExUid2.Encryption
   alias ExUid2.Keyring
+  alias ExUid2.Api
   use GenServer
 
   @table_name __MODULE__
@@ -20,16 +21,9 @@ defmodule ExUid2.Dsp do
 
   @impl GenServer
   def handle_info(:refresh, state) do
-    start_time = :os.system_time(:millisecond)
-
-    fresh_keyring = fetch_keyring()
+    fresh_keyring = Api.Sharing.fetch_keyring()
     :ets.insert(@table_name, {@keyring, fresh_keyring})
-
-    stop_time = :os.system_time(:millisecond)
-
-    next_refresh_in_ms = @refresh_rate_ms - (stop_time - start_time)
-    Process.send_after(self(), :refresh, next_refresh_in_ms)
-
+    Process.send_after(self(), :refresh, @refresh_rate_ms)
     {:noreply, state}
   end
 
@@ -46,21 +40,5 @@ defmodule ExUid2.Dsp do
     token
     |> :base64.decode()
     |> Encryption.decrypt_v2_token(keyring, now_ms)
-  end
-
-  defp fetch_keyring() do
-    path = "/v2/key/sharing"
-
-    resp = ExUid2.Request.send(path, "")
-    secret_key = Application.fetch_env!(:ex_uid2, :secret_key) |> :base64.decode()
-
-    response =
-      resp.body
-      |> :base64.decode()
-      |> ExUid2.Request.decrypt_response(secret_key)
-
-    raw_body = Map.get(response, "body")
-
-    Keyring.new(raw_body)
   end
 end

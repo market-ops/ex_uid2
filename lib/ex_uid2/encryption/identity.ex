@@ -37,7 +37,5 @@ defmodule ExUid2.Encryption.Identity do
     }
   end
 
-  def parse(_) do
-    {:error, :invalid_identity}
-  end
+  def parse(_), do: {:error, :invalid_identity}
 end
