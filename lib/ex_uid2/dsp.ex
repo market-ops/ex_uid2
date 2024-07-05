@@ -13,6 +13,13 @@ defmodule ExUid2.Dsp do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  def child_spec(_opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, []}
+    }
+  end
+
   @impl GenServer
   def init(_opts) do
     send(self(), :refresh)

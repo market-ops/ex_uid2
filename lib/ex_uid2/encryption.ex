@@ -17,15 +17,17 @@ defmodule ExUid2.Encryption do
          {:expired?, false} <- {:expired?, now_ms < master_payload.expires_ms},
          {:site_key, {:ok, site_key}} <- {:site_key, Keyring.get_key(keyring, master_payload.site_key_id)},
          {:identity, {:ok, identity}} <- {:identity, Identity.decrypt(master_payload.identity_payload, site_key, master_payload.identity_iv)} do
-      %Uid2{
+      {:ok,
+       %Uid2{
         uid: identity.id_bin,
-        established: DateTime.from_unix!(identity.established_ms, :millisecond),
+        established_ms: identity.established_ms,
         site_id: identity.site_id,
         site_key: site_key,
         identity_scope: keyring.info.identity_scope,
         identity_type: nil,
         advertising_token_version: token.version,
-        expires: DateTime.from_unix!(master_payload.expires_ms, :millisecond)
+        expires_ms: master_payload.expires_ms
+       }
       }
     else
       {:parsed_v2_token, error} -> error

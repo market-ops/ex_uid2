@@ -2,17 +2,63 @@
 
 A library to interact with [Unified ID2](https://unifiedid.com/docs/intro)
 
-## Installation
+It currently only handles the DSP part of UID2 (decrypting UID2 tokens in bid requests).
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ex_uid2` to your list of dependencies in `mix.exs`:
+## Installation
+TODO
+
+## Usage
+Add the ExUid2 configuration to your application's config file:
 
 ```elixir
-def deps do
-  [
-    {:ex_uid2, "~> 0.1.0"}
-  ]
-end
+import Config
+
+config :ex_uid2,
+  base_url: "https://uid2_operator_server.com",
+  api_key: "your_api_key",
+  secret_key: "your_secret_key"
+
+```
+
+Start the DSP server
+
+```elixir
+ExUid2.Dsp.start_link()
+```
+
+or add it to a supervisor (e.g. in your `application.ex` file)
+
+```elixir
+children = [
+  ExUid2.Dsp
+]
+
+Supervisor.start_link(children, ...)
+```
+
+Once started, the application will periodically request a fresh keyring from the configured UID2 operator server. Encrypted tokens
+can then be decrypted.
+
+```elixir
+ExUid2.Dsp.decrypt_token(<redacted>)
+{:ok,
+ %ExUid2.Uid2{
+   uid: <redacted>,
+   established: ~U[2024-07-02 01:17:56.501Z],
+   site_id: 11,
+   site_key: %ExUid2.Keyring.Key{
+     activates: 1717269873,
+     created: 1717183473,
+     expires: 1725909873,
+     id: 2383,
+     secret: <redacted>,
+     keyset_id: nil
+   },
+   identity_scope: "UID2",
+   identity_type: nil,
+   advertising_token_version: 2,
+   expires: ~U[2024-07-06 19:12:10.313Z]
+ }}
 ```
 
 ## Token decryption specification
