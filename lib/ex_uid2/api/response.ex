@@ -1,4 +1,8 @@
 defmodule ExUid2.Api.Response do
+
+  @doc """
+  Takes a base64 encoded encrypted response from the UID2 operator server, decodes, decrypts and parses its json content into a map
+  """
   def decrypt_and_parse(response_bin, secret_key) do
     with {:decoded_response, decoded_response} <- {:decoded_response, :base64.decode(response_bin)},
          {:parsed_iv_and_rest, {:ok, {iv, rest}}} <- {:parsed_iv_and_rest, parse_iv_and_rest(decoded_response)},
@@ -11,7 +15,10 @@ defmodule ExUid2.Api.Response do
     end
   end
 
-  defp decrypt(payload, iv, tag, secret_key) do
+  @doc """
+  Decrypts a aes-256-gcm encrypted response from the UID2 operator server and extracts the payload from the decrypted envelope
+  """
+  def decrypt(payload, iv, tag, secret_key) do
     case :crypto.crypto_one_time_aead(:aes_256_gcm, secret_key, iv, payload, <<>>, tag, false) do
       <<_ts_bin::binary-size(8), _nonce::binary-size(8), payload::binary>> ->
         {:ok, payload}
