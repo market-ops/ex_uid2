@@ -3,6 +3,7 @@ defmodule ExUid2.Api.Response do
   @doc """
   Takes a base64 encoded encrypted response from the UID2 operator server, decodes, decrypts and parses its json content into a map
   """
+  @spec decrypt_and_parse(binary(), ExUid2.Encryption.secret_key()) :: {:ok, map()} | {:error, any()}
   def decrypt_and_parse(response_bin, secret_key) do
     with {:decoded_response, decoded_response} <- {:decoded_response, :base64.decode(response_bin)},
          {:parsed_iv_and_rest, {:ok, {iv, rest}}} <- {:parsed_iv_and_rest, parse_iv_and_rest(decoded_response)},
