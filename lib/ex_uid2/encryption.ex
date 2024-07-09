@@ -5,6 +5,8 @@ defmodule ExUid2.Encryption do
   alias ExUid2.Uid2
   alias ExUid2.Keyring
 
+  @type secret_key :: <<_::256>>
+
   @spec decrypt_v2_token(binary(), Keyring.t(), integer()) :: Uid2.t() | {:error, any()}
   def decrypt_v2_token(
     token_bin,
