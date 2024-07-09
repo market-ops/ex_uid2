@@ -1,6 +1,10 @@
 defmodule ExUid2.Api.Request do
 
-  def make_encrypted_request_body(payload, secret_key, ts) do
+
+  @doc """
+  Builds an encrypted request body from a binary payloadp
+  """
+  def build_and_encrypt(payload, secret_key, ts) do
     with {:unencryted_envelope, {:ok, envelope}} <- {:unencryted_envelope, make_unencrypted_envelope(payload, ts)},
          {:encrypted_envelope, {:ok, encrypted_envelope}} <- {:encrypted_envelope, encrypt_envelope(envelope, secret_key)} do
            {:ok, encrypted_envelope}
