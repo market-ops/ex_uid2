@@ -38,16 +38,15 @@ defmodule ExUid2.Dsp do
 
       error ->
         nb_attempts = state.fetch_keyring_attempts
-        retry_time_ms = round(:math.pow(2, nb_attempts))
+        # Exponential backoff maxes out at a 32 seconds interval
+        retry_time_ms = 500 * round(:math.pow(2, min(nb_attempts, 6)))
 
         Logger.warning(
           "Failed to fetch keyring: #{inspect(error)}. Retrying in #{retry_time_ms} ms."
         )
 
         Process.send_after(self(), :refresh, retry_time_ms)
-        # Exponential backoff maxes out at a ~32 seconds interval
-        nb_attempts = min(nb_attempts + 1, 15)
-        {:noreply, put_in(state.fetch_keyring_attempts, nb_attempts)}
+        {:noreply, put_in(state.fetch_keyring_attempts, nb_attempts + 1)}
     end
   end
 
