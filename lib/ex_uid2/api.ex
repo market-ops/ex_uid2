@@ -2,6 +2,7 @@ defmodule ExUid2.Api do
   alias ExUid2.Api.Request
   alias ExUid2.Api.Response
 
+  @spec post_encrypted_request(binary(), binary(), non_neg_integer()) :: {:ok, map()} | {:error, any()}
   def post_encrypted_request(path, payload, ts \\ :os.system_time(:millisecond)) do
     secret_key = get_secret_key()
 
@@ -10,10 +11,8 @@ defmodule ExUid2.Api do
          {:parsed_response, {:ok, parsed_response}} <- {:parsed_response, Response.decrypt_and_parse(response_body, secret_key)} do
       {:ok, parsed_response}
     else
-      {:request_body, error} -> error
-      {:response,{:ok, %Req.Response{status: _}} = response} -> {:error, response}
-      {:response, error} -> error
-      {:parsed_response, error} -> error
+      {:response,{:ok, %Req.Response{status: _} = response}} -> {:error, response}
+      {_, error} -> error
     end
   end
 
