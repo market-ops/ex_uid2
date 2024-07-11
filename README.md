@@ -95,26 +95,26 @@ this library is doing.
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
 | 0              | 1            | UID2 token version |
-| 1              | 4            | Master key ID. Must be int32 big endian. |
+| 1              | 4            | Master key ID. Must be uint32 big endian. |
 | 5              | 16           | Master 128-bit initialization vector (IV), which is used to randomize data encryption. |
 | 21             | N            | Master Payload (encrypted) |
 
 ### Decrypted Master Payload
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
-| 0              | 8            | Expiration time in milliseconds (Unix timestamp). Must be int64 big endian. |
-| 8              | 4            | Site key ID. Must be int32 big endian. |
+| 0              | 8            | Expiration time in milliseconds (Unix timestamp). Must be uint64 big endian. |
+| 8              | 4            | Site key ID. Must be uint32 big endian. |
 | 12             | 16           | Identity 128-bit initialization vector (IV), which is used to randomize data encryption. |
 | 28             | N            | Identity Payload (encrypted)
 
 ### Decrypted Identity
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
-| 0              | 4            | Site ID. Must be int32 big endian. |
-| 4              | 4            | Length in bytes of ID binary. Must be int32 big endian. |
+| 0              | 4            | Site ID. Must be uint32 big endian. |
+| 4              | 4            | Length in bytes of ID binary. Must be uint32 big endian. |
 | 8              | N            | Base64-encoded ID binary (the actual user ID). |
 | 8 + N          | 4            | Unknown. |
-| 12 + N         | 8            | Time when the identity was established in milliseconds (Unix timestamp). Must be int64 big endian. |
+| 12 + N         | 8            | Time when the identity was established in milliseconds (Unix timestamp). Must be uint64 big endian. |
 | 20 + N         | M            | Unknown. |
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
