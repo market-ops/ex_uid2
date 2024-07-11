@@ -1,5 +1,8 @@
 defmodule ExUid2.Keyring do
-  @type t :: %__MODULE__{keys: [__MODULE__.Key.t()], info: __MODULE__.Info.t()}
+  @type t :: %__MODULE__{
+          keys: %{non_neg_integer() => __MODULE__.Key.t()},
+          info: __MODULE__.Info.t()
+        }
 
   @moduledoc """
   Struct holding the keys periodically fetched from the UID2 operator server.
@@ -88,7 +91,11 @@ defmodule ExUid2.Keyring do
 
   @spec new(map()) :: ExUid2.Keyring.t()
   def new(%{"keys" => raw_keys} = keyring_map) when not is_nil(raw_keys) do
-    keys = Enum.map(raw_keys, fn raw_key -> Key.new(raw_key) end)
+    keys =
+      raw_keys
+      |> Enum.map(fn raw_key -> Key.new(raw_key) end)
+      |> Enum.map(fn key -> {key.id, key} end)
+      |> Map.new()
 
     %__MODULE__{
       keys: keys,
@@ -98,7 +105,7 @@ defmodule ExUid2.Keyring do
 
   @spec get_key(t(), non_neg_integer()) :: {:ok, Key.t()} | {:error, :key_not_found}
   def get_key(%__MODULE__{} = keyring, id) do
-    case Enum.find(keyring.keys, nil, fn key -> key.id == id end) do
+    case Map.get(keyring.keys, id) do
       nil ->
         {:error, :key_not_found}
 
