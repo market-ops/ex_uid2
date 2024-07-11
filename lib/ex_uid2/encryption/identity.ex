@@ -21,7 +21,7 @@ defmodule ExUid2.Encryption.Identity do
     |> parse()
   end
 
-  @spec parse(any()) :: {:error, :invalid_identity} | {:ok, t()}
+  @spec parse(any()) :: {:ok, t()} | {:error, :invalid_identity_payload}
   def parse(
         <<site_id::big-integer-32, id_len::big-integer-32, id_bin::binary-size(id_len),
           _::binary-size(4), established_ms::big-integer-64, _::binary>>
@@ -37,5 +37,5 @@ defmodule ExUid2.Encryption.Identity do
     }
   end
 
-  def parse(_), do: {:error, :invalid_identity}
+  def parse(_), do: {:error, :invalid_identity_payload}
 end

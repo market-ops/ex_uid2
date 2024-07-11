@@ -33,8 +33,8 @@ defmodule ExUid2.Encryption do
       {:parsed_v2_token, error} -> error
       {:master_key, {:error, :key_not_found}} -> {:error, :not_authorized_for_master_key}
       {:master_payload, error} -> error
-      {:site_key, {:error, :key_not_found}} -> {:error, :not_authorized_for_site_key}
       {:expired?, true} -> {:error, :token_expired}
+      {:site_key, {:error, :key_not_found}} -> {:error, :not_authorized_for_site_key}
       {:identity, error} -> error
     end
   end
