@@ -56,10 +56,13 @@ defmodule ExUid2.Keyring do
         created_ms: key_map["created"],
         expires_ms: key_map["expires"],
         id: key_map["id"],
-        secret: key_map["secret"] |> :base64.decode(),
+        secret: key_map["secret"] |> decode_secret(),
         keyset_id: key_map["keyset_id"]
       }
     end
+
+    defp decode_secret(nil), do: nil
+    defp decode_secret(encoded_secret), do: :base64.decode(encoded_secret)
   end
 
   defmodule Info do
