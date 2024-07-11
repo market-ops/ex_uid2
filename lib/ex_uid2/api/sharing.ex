@@ -11,8 +11,15 @@ defmodule ExUid2.Api.Sharing do
   Request the decryption keys necessary to decrypt UID2 tokens.
   """
   def fetch_keyring() do
-    {:ok, resp} = Api.post_encrypted_request(@key_sharing_path, "")
-    raw_keyring_map = Map.get(resp, "body")
-    Keyring.new(raw_keyring_map)
+    case Api.post_encrypted_request(@key_sharing_path, "") do
+      {:ok, %{"status" => "success", "body" => body}} ->
+        {:ok, Keyring.new(body)}
+
+      {:ok, response} ->
+        {:error, {:unexpected_response, response}}
+
+      error ->
+        error
+    end
   end
 end
