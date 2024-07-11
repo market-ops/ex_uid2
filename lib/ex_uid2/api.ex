@@ -23,7 +23,7 @@ defmodule ExUid2.Api do
     Req.post(base_url <> path, auth: {:bearer, api_key}, body: payload)
   end
 
-  def get_secret_key() do
+  defp get_secret_key() do
     Application.fetch_env!(:ex_uid2, :secret_key) |> :base64.decode()
   end
 end
