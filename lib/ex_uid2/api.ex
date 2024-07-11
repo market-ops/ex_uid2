@@ -12,7 +12,7 @@ defmodule ExUid2.Api do
     else
       {:request_body, error} -> error
       {:parsed_response, error} -> error
-      {:response, response} -> {:error, response}
+      {:response, %Req.Response{status: _} = response} -> {:error, response}
     end
   end
 
