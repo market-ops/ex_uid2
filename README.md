@@ -61,6 +61,13 @@ ExUid2.Dsp.decrypt_token(<redacted>)
  }}
 ```
 
+If the keyring hasn't been properly fetched by the time a token decryption is attempted, an error tuple will be returned instead:
+
+```elixir
+ExUid2.Dsp.decrypt_token(<redacted>)
+{:error, :no_keyring_stored}
+```
+
 ## Token decryption specification
 Since no specification for the token decryption protocol could be found, the decryption
 protocol has been found by reverse engineering the existing SDKs and may include errors
