@@ -25,7 +25,7 @@ defmodule ExUid2.Dsp do
   @impl GenServer
   def init(_opts) do
     send(self(), :refresh)
-    {:ok, []}
+    {:ok, %{fetch_keyring_attempts: 0}}
   end
 
   @impl GenServer
@@ -34,13 +34,21 @@ defmodule ExUid2.Dsp do
       {:ok, fresh_keyring} ->
         :ets.insert(@table_name, {@keyring, fresh_keyring})
         Process.send_after(self(), :refresh, @refresh_rate_ms)
+        {:noreply, put_in(state.fetch_keyring_attempts, 0)}
 
       error ->
-        Logger.warning("Failed to fetch keyring: #{inspect(error)}. Retrying in one minute.")
-        Process.send_after(self(), :refresh, 60_000)
-    end
+        nb_attempts = state.fetch_keyring_attempts
+        retry_time_ms = round(:math.pow(2, nb_attempts))
 
-    {:noreply, state}
+        Logger.warning(
+          "Failed to fetch keyring: #{inspect(error)}. Retrying in #{retry_time_ms} ms."
+        )
+
+        Process.send_after(self(), :refresh, retry_time_ms)
+        # Exponential backoff maxes out at a ~32 seconds interval
+        nb_attempts = min(nb_attempts + 1, 15)
+        {:noreply, put_in(state.fetch_keyring_attempts, nb_attempts)}
+    end
   end
 
   @spec decrypt_token(binary(), non_neg_integer()) :: {:ok, ExUid2.Uid2.t()} | {:error, any()}
@@ -51,6 +59,7 @@ defmodule ExUid2.Dsp do
         token
         |> :base64.decode()
         |> Encryption.decrypt_v2_token(keyring, now_ms)
+
       error ->
         error
     end
@@ -61,9 +70,9 @@ defmodule ExUid2.Dsp do
     case :ets.lookup(@table_name, @keyring) do
       [{@keyring, keyring}] ->
         {:ok, keyring}
+
       [] ->
         {:error, :no_keyring_stored}
     end
-
   end
 end
