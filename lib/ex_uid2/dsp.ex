@@ -43,19 +43,27 @@ defmodule ExUid2.Dsp do
     {:noreply, state}
   end
 
-  @spec decrypt_token(binary(), non_neg_integer()) :: ExUid2.Uid2.t() | {:error, any()}
+  @spec decrypt_token(binary(), non_neg_integer()) :: {:ok, ExUid2.Uid2.t()} | {:error, any()}
   def decrypt_token(token, now_ms \\ :os.system_time(:millisecond)) do
-    keyring = get_keyring()
     # TODO: validate keys (see encryption.py)
-
-    token
-    |> :base64.decode()
-    |> Encryption.decrypt_v2_token(keyring, now_ms)
+    case get_keyring() do
+      {:ok, keyring} ->
+        token
+        |> :base64.decode()
+        |> Encryption.decrypt_v2_token(keyring, now_ms)
+      error ->
+        error
+    end
   end
 
-  @spec get_keyring() :: Keyring.t()
+  @spec get_keyring() :: {:ok, Keyring.t()} | {:error, :no_keyring_stored}
   defp get_keyring() do
-    [{@keyring, keyring}] = :ets.lookup(@table_name, @keyring)
-    keyring
+    case :ets.lookup(@table_name, @keyring) do
+      [{@keyring, keyring}] ->
+        {:ok, keyring}
+      [] ->
+        {:error, :no_keyring_stored}
+    end
+
   end
 end
