@@ -21,6 +21,16 @@ defmodule ExUid2.Encryption.Identity do
     |> parse()
   end
 
+  @spec encrypt(t(), Key.t(), <<_::128>>) :: binary()
+  def encrypt(%__MODULE__{} = identity, key, iv) do
+    payload = make_envelope(identity)
+
+    :crypto.crypto_one_time(:aes_256_cbc, key.secret, iv, <<payload::binary>>, [
+      {:padding, :pkcs_padding},
+      {:encrypt, true}
+    ])
+  end
+
   @spec parse(any()) :: {:ok, t()} | {:error, :invalid_identity_payload}
   def parse(
         <<site_id::big-integer-32, id_len::big-integer-32, id_bin::binary-size(id_len),
@@ -38,4 +48,10 @@ defmodule ExUid2.Encryption.Identity do
   end
 
   def parse(_), do: {:error, :invalid_identity_payload}
+
+  @spec make_envelope(t()) :: binary()
+  def make_envelope(identity) do
+    <<identity.site_id::big-integer-32, identity.id_len::big-integer-32, identity.id_bin::binary,
+      0::big-integer-32, identity.established_ms::big-integer-64>>
+  end
 end

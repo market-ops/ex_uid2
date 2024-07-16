@@ -30,4 +30,9 @@ defmodule ExUid2.Encryption.EncryptedToken do
   end
 
   def parse_v2_token(_), do: {:error, :invalid_v2_token}
+
+  def make_v2_token_envelope(encrypted_token) do
+    <<encrypted_token.version::big-integer-8, encrypted_token.master_key_id::big-integer-32,
+      encrypted_token.master_iv::big-binary-size(16), encrypted_token.master_payload::binary>>
+  end
 end
