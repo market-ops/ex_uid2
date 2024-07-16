@@ -1,5 +1,5 @@
 defmodule Test.Dsp do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   alias Test.Support.Utils
   alias ExUid2.Dsp
