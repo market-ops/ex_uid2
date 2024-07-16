@@ -19,9 +19,11 @@ defmodule ExUid2.Api do
   defp post(payload, path) do
     base_url = Application.fetch_env!(:ex_uid2, :base_url)
     api_key = Application.fetch_env!(:ex_uid2, :api_key)
-    req_options = Application.get_env(:ex_uid2, :req_opts, [auth: {:bearer, api_key}])
+    req_options = Application.get_env(:ex_uid2, :req_opts, [])
+    auth = {:auth, {:bearer, api_key}}
+    body = {:body, payload}
 
-    Req.post(base_url <> path, [{:body, payload} | req_options])
+    Req.post(base_url <> path, [body, auth | req_options])
   end
 
   defp get_secret_key() do
