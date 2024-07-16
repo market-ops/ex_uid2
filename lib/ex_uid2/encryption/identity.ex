@@ -50,8 +50,13 @@ defmodule ExUid2.Encryption.Identity do
   def parse(_), do: {:error, :invalid_identity_payload}
 
   @spec make_envelope(t()) :: binary()
-  def make_envelope(identity) do
-    <<identity.site_id::big-integer-32, identity.id_len::big-integer-32, identity.id_bin::binary,
-      0::big-integer-32, identity.established_ms::big-integer-64>>
+  def make_envelope(%__MODULE__{
+        site_id: site_id,
+        id_len: id_len,
+        id_bin: id_bin,
+        established_ms: established_ms
+      }) do
+    <<site_id::big-integer-32, id_len::big-integer-32, id_bin::binary, 0::big-integer-32,
+      established_ms::big-integer-64>>
   end
 end

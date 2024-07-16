@@ -49,8 +49,13 @@ defmodule ExUid2.Encryption.MasterPayload do
     ])
   end
 
-  defp make_envelope(master_payload) do
-    <<master_payload.expires_ms::big-integer-64, master_payload.site_key_id::big-integer-32,
-      master_payload.identity_iv::big-binary-size(16), master_payload.identity_payload::binary>>
+  defp make_envelope(%__MODULE__{
+         expires_ms: expires_ms,
+         site_key_id: site_key_id,
+         identity_iv: identity_iv,
+         identity_payload: identity_payload
+       }) do
+    <<expires_ms::big-integer-64, site_key_id::big-integer-32, identity_iv::big-binary-size(16),
+      identity_payload::binary>>
   end
 end
