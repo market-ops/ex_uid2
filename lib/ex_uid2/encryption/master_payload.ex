@@ -39,4 +39,18 @@ defmodule ExUid2.Encryption.MasterPayload do
   end
 
   def parse(_), do: {:error, :invalid_master_payload}
+
+  def encrypt(%__MODULE__{} = master_payload, key, iv) do
+    payload_bin = make_envelope(master_payload)
+
+    :crypto.crypto_one_time(:aes_256_cbc, key.secret, iv, payload_bin, [
+      {:padding, :pkcs_padding},
+      {:encrypt, true}
+    ])
+  end
+
+  defp make_envelope(master_payload) do
+    <<master_payload.expires_ms::big-integer-64, master_payload.site_key_id::big-integer-32,
+      master_payload.identity_iv::big-binary-size(16), master_payload.identity_payload::binary>>
+  end
 end
