@@ -11,7 +11,6 @@ defmodule ExUid2.Dsp do
   require Logger
 
   def start_link(opts \\ []) do
-    :ets.new(@table_name, [:named_table, {:read_concurrency, true}, :public])
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
@@ -24,6 +23,7 @@ defmodule ExUid2.Dsp do
 
   @impl GenServer
   def init(_opts) do
+    :ets.new(@table_name, [:named_table, {:read_concurrency, true}, :public])
     send(self(), :refresh)
     {:ok, %{fetch_keyring_attempts: 0}}
   end
