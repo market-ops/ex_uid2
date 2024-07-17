@@ -7,7 +7,7 @@ defmodule ExUid2.Encryption do
 
   @type secret_key :: <<_::256>>
 
-  @spec decrypt_v2_token(binary(), Keyring.t(), integer()) :: Uid2.t() | {:error, any()}
+  @spec decrypt_v2_token(binary(), Keyring.t(), non_neg_integer()) :: {:ok, Uid2.t()} | {:error, any()}
   def decrypt_v2_token(
     token_bin,
     keyring,
