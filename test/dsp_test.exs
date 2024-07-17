@@ -14,10 +14,7 @@ defmodule Test.Dsp do
     keyring = Utils.keyring(opts)
     token = make_token(keyring)
 
-    {:ok, expected_uid2} =
-      token
-      |> :base64.decode()
-      |> ExUid2.Encryption.decrypt_v2_token(keyring, now)
+    {:ok, expected_uid2} = ExUid2.Encryption.decrypt_v2_token(token, keyring, now)
 
     {:ok, uid2} = Utils.try_until_success(fn -> Dsp.decrypt_token(token) end)
 
@@ -52,10 +49,7 @@ defmodule Test.Dsp do
     keyring = Utils.keyring(opts)
     token = make_token(keyring)
 
-    {:ok, expected_uid2} =
-      token
-      |> :base64.decode()
-      |> ExUid2.Encryption.decrypt_v2_token(keyring, now)
+    {:ok, expected_uid2} = ExUid2.Encryption.decrypt_v2_token(token, keyring, now)
 
     {:ok, uid2} = Utils.try_until_success(fn -> Dsp.decrypt_token(token) end)
 
@@ -68,8 +62,10 @@ defmodule Test.Dsp do
   end
 
   defp make_token(keyring, expires_ms \\ :os.system_time(:millisecond) + 10_000) do
-    ExUid2.Encryption.encrypt_v2_token(Utils.email_uid(), keyring, 1, 2, expires_ms)
-    |> :base64.encode()
+    {:ok, token} =
+      ExUid2.Encryption.encrypt_v2_token(Utils.email_uid(), keyring, 1, 2, expires_ms)
+
+    token
   end
 
   defp prepare_dsp(opts) do
