@@ -77,7 +77,6 @@ defmodule ExUid2.Dsp do
     case get_keyring() do
       {:ok, keyring} ->
         token
-        |> :base64.decode()
         |> Encryption.decrypt_v2_token(keyring, now_ms)
 
       error ->

@@ -13,7 +13,8 @@ defmodule ExUid2.Encryption do
     keyring,
     now_ms
   ) do
-    with {:parsed_v2_token, {:ok, token}} <- {:parsed_v2_token, EncryptedToken.parse_v2_token(token_bin)},
+    with {:decoded_token, {:ok, decoded_token_bin}} <- {:decoded_token, decode_token(token_bin)},
+         {:parsed_v2_token, {:ok, token}} <- {:parsed_v2_token, EncryptedToken.parse_v2_token(decoded_token_bin)},
          {:master_key, {:ok, master_key}} <- {:master_key, Keyring.get_key(keyring, token.master_key_id)},
          {:master_payload, {:ok, master_payload}} <- {:master_payload, MasterPayload.decrypt(token.master_payload, master_key, token.master_iv)},
          {:expired?, false} <- {:expired?, now_ms > master_payload.expires_ms},
@@ -32,6 +33,7 @@ defmodule ExUid2.Encryption do
        }
       }
     else
+      {:decoded_token, error} -> error
       {:parsed_v2_token, error} -> error
       {:master_key, {:error, :key_not_found}} -> {:error, :not_authorized_for_master_key}
       {:master_payload, error} -> error
@@ -55,6 +57,19 @@ defmodule ExUid2.Encryption do
     encrypted_master_payload = MasterPayload.encrypt(master_payload, master_key, master_iv)
     encrypted_token = %EncryptedToken{version: 2, master_key_id: master_key_id, master_iv: master_iv, master_payload: encrypted_master_payload}
 
-    EncryptedToken.make_v2_token_envelope(encrypted_token)
+    token =
+      encrypted_token
+      |> EncryptedToken.make_v2_token_envelope()
+      |> :base64.encode()
+
+    {:ok, token}
+  end
+
+  defp decode_token(token_bin) do
+    try do
+      {:ok, :base64.decode(token_bin)}
+    rescue
+      _ -> {:error, :base_64_decoding_error}
+    end
   end
 end
