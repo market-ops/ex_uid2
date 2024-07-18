@@ -5,6 +5,8 @@ defmodule ExUid2.Encryption do
   alias ExUid2.Uid2
   alias ExUid2.Keyring
 
+  require Logger
+
   @type secret_key :: <<_::256>>
 
   @spec decrypt_v2_token(binary(), Keyring.t(), non_neg_integer()) :: {:ok, Uid2.t()} | {:error, any()}
@@ -72,7 +74,8 @@ defmodule ExUid2.Encryption do
     try do
       {:ok, :base64.decode(token_bin, %{padding: false})}
     rescue
-      _ ->
+      error ->
+        Logger.warning(error: "base64 decoding error", token: token_bin, error_type: error)
         {:error, :base_64_decoding_error}
     end
   end
