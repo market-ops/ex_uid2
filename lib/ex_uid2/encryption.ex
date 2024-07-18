@@ -11,7 +11,7 @@ defmodule ExUid2.Encryption do
   def decrypt_v2_token(
     token_bin,
     keyring,
-    now_ms
+    now_ms \\ :os.system_time(:millisecond)
   ) do
     with {:decoded_token, {:ok, decoded_token_bin}} <- {:decoded_token, decode_token(token_bin)},
          {:parsed_v2_token, {:ok, token}} <- {:parsed_v2_token, EncryptedToken.parse_v2_token(decoded_token_bin)},
@@ -70,10 +70,20 @@ defmodule ExUid2.Encryption do
 
   defp decode_token(token_bin) do
     try do
-      {:ok, :base64.decode(token_bin, %{padding: false})}
+      decoded =
+        token_bin
+        |> normalize_base64()
+        |> :base64.decode(%{padding: false})
+      {:ok, decoded}
     rescue
       _ ->
         {:error, :base_64_decoding_error}
     end
+  end
+
+  defp normalize_base64(bin) do
+    bin
+    |> String.replace("-", "+")
+    |> String.replace("_", "/")
   end
 end
