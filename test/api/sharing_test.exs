@@ -6,12 +6,14 @@ defmodule Test.Api.SharingTest do
   alias Test.Support.Utils
 
   test "fetch_keyring/0 sends the encrypted request, decrypts the response and parses the keyring " do
-    keyring_text = Utils.keyring_json()
+    keyring_opts = Utils.make_keyring_opts()
+
+    keyring_text = Utils.keyring_json(keyring_opts)
     Utils.prepare_response(keyring_text)
 
     {:ok, keyring} = Sharing.fetch_keyring()
 
-    expected_keyring = Utils.keyring()
+    expected_keyring = Utils.keyring(keyring_opts)
     assert match?(^expected_keyring, keyring)
   end
 

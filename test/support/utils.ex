@@ -24,11 +24,30 @@ defmodule Test.Support.Utils do
     render(render_opts)
   end
 
-  def keyring(opts \\ %{}) do
+  def keyring(opts \\ make_keyring_opts()) do
     keyring_json(opts)
     |> Jason.decode!(objects: :maps)
     |> Map.get("body")
     |> ExUid2.Keyring.new()
+  end
+
+  def make_keyring_opts(now \\ :os.system_time(:millisecond)) do
+    key_opts = %{expires: now + 10_000}
+    %{key1: key_opts, key2: key_opts}
+  end
+
+  def make_token(keyring, opts \\ %{}) do
+    default_token_opts = %{
+      expires_ms: :os.system_time(:millisecond) + 10_000,
+      uid: email_uid()
+    }
+
+    opts = Map.merge(default_token_opts, opts)
+
+    {:ok, token} =
+      ExUid2.Encryption.encrypt_v2_token(opts.uid, keyring, 1, 2, opts.expires_ms)
+
+    token
   end
 
   def master_secret(),
