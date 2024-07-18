@@ -43,15 +43,14 @@ defmodule ExUid2.Encryption do
     end
   end
 
-  @spec encrypt_v2_token(binary(), Keyring.t(), non_neg_integer(), non_neg_integer(), non_neg_integer()) :: binary()
+  @spec encrypt_v2_token(binary(), Keyring.t(), non_neg_integer(), non_neg_integer(), non_neg_integer()) :: {:ok, binary()}
   def encrypt_v2_token(id_bin, keyring, master_key_id, site_key_id, expires_ms) do
-
-    {:ok, site_key} = Keyring.get_key(keyring, site_key_id)
+    with {:site_key, {:ok, site_key}} <- {:site_key, Keyring.get_key(keyring, site_key_id)},
+         {:master_key, {:ok, master_key}} <- {:master_key, Keyring.get_key(keyring, master_key_id)} do
     identity_iv = :crypto.strong_rand_bytes(16)
     identity = %Identity{site_id: site_key_id, established_ms: 0, id_bin: id_bin, id_len: byte_size(id_bin)}
     encrypted_identity = Identity.encrypt(identity, site_key, identity_iv)
 
-    {:ok, master_key} = Keyring.get_key(keyring, master_key_id)
     master_payload = %MasterPayload{site_key_id: site_key_id, identity_iv: identity_iv, identity_payload: encrypted_identity, expires_ms: expires_ms}
     master_iv = :crypto.strong_rand_bytes(16)
     encrypted_master_payload = MasterPayload.encrypt(master_payload, master_key, master_iv)
@@ -63,13 +62,18 @@ defmodule ExUid2.Encryption do
       |> :base64.encode()
 
     {:ok, token}
+    else
+      {:site_key, _} -> {:error, :site_key_not_found}
+      {:master_key, _} -> {:error, :master_key_not_found}
+    end
   end
 
   defp decode_token(token_bin) do
     try do
-      {:ok, :base64.decode(token_bin)}
+      {:ok, :base64.decode(token_bin, %{padding: false})}
     rescue
-      _ -> {:error, :base_64_decoding_error}
+      _ ->
+        {:error, :base_64_decoding_error}
     end
   end
 end
