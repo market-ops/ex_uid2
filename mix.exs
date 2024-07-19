@@ -24,8 +24,8 @@ defmodule ExUid2.MixProject do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:req, "~> 0.5.1"},
-      {:plug, "~> 1.0", only: [:test], runtime: false}
+      {:req, "~> 0.5"},
+      {:plug, "~> 1.16", only: [:test], runtime: false}
     ]
   end
 
