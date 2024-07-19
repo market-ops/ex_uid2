@@ -5,7 +5,17 @@ A library to interact with [Unified ID2](https://unifiedid.com/docs/intro)
 It currently only handles the DSP part of UID2 (decrypting UID2 tokens in bid requests).
 
 ## Installation
-TODO
+Add :ex_uid2 to the list of dependencies in mix.exs
+
+```elixir
+def deps do
+  [
+      {:ex_uid2,
+       git: "https://github.com/market-ops/ex_uid2.git",
+       branch: "application"},
+  ]
+end
+```
 
 ## Usage
 Add the ExUid2 configuration to your application's config file:
@@ -18,22 +28,6 @@ config :ex_uid2,
   api_key: "your_api_key",
   secret_key: "your_secret_key"
 
-```
-
-Start the DSP server
-
-```elixir
-ExUid2.Dsp.start_link()
-```
-
-or add it to a supervisor (e.g. in your `application.ex` file)
-
-```elixir
-children = [
-  ExUid2.Dsp
-]
-
-Supervisor.start_link(children, ...)
 ```
 
 Once started, the application will periodically request a fresh keyring from the configured UID2 operator server. Encrypted tokens
