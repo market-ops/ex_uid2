@@ -1,4 +1,6 @@
 defmodule ExUid2.Encryption.EncryptedToken do
+  @moduledoc false
+
   @type t :: %__MODULE__{
           version: non_neg_integer(),
           master_key_id: non_neg_integer(),

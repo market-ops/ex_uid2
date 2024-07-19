@@ -1,5 +1,5 @@
 defmodule ExUid2.Api.Request do
-
+  @moduledoc false
 
   @doc """
   Builds an encrypted request body from a binary payloadp

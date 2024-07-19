@@ -1,4 +1,5 @@
 defmodule Test.Support.Utils do
+  @moduledoc false
   require EEx
   EEx.function_from_file(:def, :render, "test/support/keyring.json.eex", [:opts])
 

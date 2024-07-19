@@ -1,4 +1,8 @@
 defmodule ExUid2.Dsp do
+  @moduledoc """
+  This is the client module for DSP-side decryption of UID2 tokens.
+  """
+
   alias ExUid2.Encryption
   alias ExUid2.Keyring
   alias ExUid2.Api
@@ -71,9 +75,12 @@ defmodule ExUid2.Dsp do
     end
   end
 
+  @doc """
+  Attempts to decrypt a base64 encoded token.
+  """
   @spec decrypt_token(binary(), non_neg_integer()) :: {:ok, ExUid2.Uid2.t()} | {:error, any()}
   def decrypt_token(token, now_ms \\ :os.system_time(:millisecond)) do
-    # TODO: validate keys (see encryption.py)
+    # TODO: validate keys
     case get_keyring() do
       {:ok, keyring} ->
         token

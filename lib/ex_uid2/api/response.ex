@@ -1,4 +1,5 @@
 defmodule ExUid2.Api.Response do
+  @moduledoc false
 
   @doc """
   Takes a base64 encoded encrypted response from the UID2 operator server, decodes, decrypts and parses its json content into a map
