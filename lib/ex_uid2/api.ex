@@ -1,4 +1,6 @@
 defmodule ExUid2.Api do
+  @moduledoc false
+
   alias ExUid2.Api.Request
   alias ExUid2.Api.Response
 
@@ -11,7 +13,7 @@ defmodule ExUid2.Api do
          {:parsed_response, {:ok, parsed_response}} <- {:parsed_response, Response.decrypt_and_parse(response_body, secret_key)} do
       {:ok, parsed_response}
     else
-      {:response,{:ok, %Req.Response{status: _} = response}} -> {:error, response}
+      {:response, {:ok, %Req.Response{status: _} = response}} -> {:error, response}
       {_, error} -> error
     end
   end

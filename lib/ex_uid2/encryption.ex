@@ -1,4 +1,6 @@
 defmodule ExUid2.Encryption do
+  @moduledoc false
+
   alias ExUid2.Encryption.EncryptedToken
   alias ExUid2.Encryption.Identity
   alias ExUid2.Encryption.MasterPayload

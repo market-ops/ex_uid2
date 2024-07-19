@@ -1,4 +1,5 @@
 defmodule ExUid2.Encryption.MasterPayload do
+  @moduledoc false
   alias ExUid2.Keyring.Key
 
   @type t :: %__MODULE__{
