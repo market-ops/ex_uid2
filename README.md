@@ -10,9 +10,7 @@ Add :ex_uid2 to the list of dependencies in mix.exs
 ```elixir
 def deps do
   [
-      {:ex_uid2,
-       git: "https://github.com/market-ops/ex_uid2.git",
-       branch: "application"},
+      {:ex_uid2, "~> 0.1"}
   ]
 end
 ```
@@ -110,8 +108,3 @@ this library is doing.
 | 8 + N          | 4            | Unknown. |
 | 12 + N         | 8            | Time when the identity was established in milliseconds (Unix timestamp). Must be uint64 big endian. |
 | 20 + N         | M            | Unknown. |
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/uid2_client_elixir>.
-
