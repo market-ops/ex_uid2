@@ -8,10 +8,13 @@ defmodule ExUid2.Dsp do
   @keyring :uid2_decryption_keyring
   @refresh_rate_ms 5000
 
+  @default_opts [mode: :active]
+
   require Logger
 
   def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+    genserver_opts = Keyword.merge(@default_opts, opts)
+    GenServer.start_link(__MODULE__, genserver_opts, name: __MODULE__)
   end
 
   def child_spec(_opts) do
@@ -22,17 +25,35 @@ defmodule ExUid2.Dsp do
   end
 
   @impl GenServer
-  def init(_opts) do
+  def init(opts) do
     :ets.new(@table_name, [:named_table, {:read_concurrency, true}, :public])
-    send(self(), :refresh)
+
+    if opts[:mode] == :active do
+      send(self(), :refresh)
+    end
+
     {:ok, %{fetch_keyring_attempts: 0}}
+  end
+
+  def refresh() do
+    GenServer.call(__MODULE__, :refresh)
+  end
+
+  def start_refresh_loop() do
+    pid = GenServer.whereis(__MODULE__)
+    send(pid, :refresh)
+  end
+
+  @impl GenServer
+  def handle_call(:refresh, _from, state) do
+    result = refresh_keyring()
+    {:reply, result, state}
   end
 
   @impl GenServer
   def handle_info(:refresh, state) do
-    case Api.Sharing.fetch_keyring() do
-      {:ok, fresh_keyring} ->
-        :ets.insert(@table_name, {@keyring, fresh_keyring})
+    case refresh_keyring() do
+      :ok ->
         Process.send_after(self(), :refresh, @refresh_rate_ms)
         {:noreply, put_in(state.fetch_keyring_attempts, 0)}
 
@@ -56,7 +77,6 @@ defmodule ExUid2.Dsp do
     case get_keyring() do
       {:ok, keyring} ->
         token
-        |> :base64.decode()
         |> Encryption.decrypt_v2_token(keyring, now_ms)
 
       error ->
@@ -72,6 +92,17 @@ defmodule ExUid2.Dsp do
 
       [] ->
         {:error, :no_keyring_stored}
+    end
+  end
+
+  defp refresh_keyring() do
+    case Api.Sharing.fetch_keyring() do
+      {:ok, fresh_keyring} ->
+        :ets.insert(@table_name, {@keyring, fresh_keyring})
+        :ok
+
+      error ->
+        error
     end
   end
 end

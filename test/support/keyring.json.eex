@@ -1,0 +1,36 @@
+{
+  "body": {
+    "caller_site_id": 2,
+    "master_keyset_id": 1,
+    "token_expiry_seconds": "86400",
+    "identity_scope": "UID2",
+    "allow_clock_skew_seconds": 1800,
+    "keys": [
+      {
+        "id": 1,
+        "created": <%= opts.key1.created %>,
+        "activates": <%= opts.key1.activates %>,
+        "expires": <%= opts.key1.expires %>,
+        "secret": "iyXxrRJcJOilqBcSJsN7XKCIuShbraXdqBCppCaLCJs="
+      },
+      {
+        "id": 2,
+        "created": <%= opts.key2.created %>,
+        "activates": <%= opts.key2.activates %>,
+        "expires": <%= opts.key2.expires%>,
+        "secret": "IPsHwoSa+lbKdGgdg8CL1zCkC0HibqcObDP+fUEYF4U="
+      }
+    ],
+
+    "site_data": [
+      {
+        "id": 2,
+        "domain_names": [
+          "bla.com",
+          "blou.com"
+        ]
+      }
+    ]
+  },
+  "status": "<%= opts.status %>"
+}
