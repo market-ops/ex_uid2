@@ -83,13 +83,10 @@ defmodule Test.Support.Utils do
   def encrypt_response(payload, iv, secret_key) do
     wrapped_payload = <<0::8*8, 0::8*8, payload::binary>>
 
-    case :crypto.crypto_one_time_aead(:aes_256_gcm, secret_key, iv, wrapped_payload, <<>>, true) do
-      {_encrypted_payload, _tag} = result ->
-        {:ok, result}
+    result =
+      :crypto.crypto_one_time_aead(:aes_256_gcm, secret_key, iv, wrapped_payload, <<>>, true)
 
-      :error ->
-        {:error, :encryption_error}
-    end
+    {:ok, result}
   end
 
   def encrypt_and_wrap_response(payload, iv, secret_key) do
