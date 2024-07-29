@@ -14,7 +14,7 @@ defmodule Test.Dsp do
     keyring = Utils.keyring(opts)
     token = Utils.make_token(keyring)
 
-    {:ok, expected_uid2} = ExUid2.Encryption.decrypt_v2_token(token, keyring, now)
+    {:ok, expected_uid2} = ExUid2.Encryption.decrypt_token(token, keyring, now)
 
     {:ok, uid2} = Utils.try_until_success(fn -> Dsp.decrypt_token(token) end)
 
@@ -49,7 +49,7 @@ defmodule Test.Dsp do
     keyring = Utils.keyring(opts)
     token = Utils.make_token(keyring)
 
-    {:ok, expected_uid2} = ExUid2.Encryption.decrypt_v2_token(token, keyring, now)
+    {:ok, expected_uid2} = ExUid2.Encryption.decrypt_token(token, keyring, now)
 
     {:ok, uid2} = Utils.try_until_success(fn -> Dsp.decrypt_token(token) end)
 
