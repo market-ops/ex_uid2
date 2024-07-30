@@ -5,12 +5,12 @@ A library to interact with [Unified ID2](https://unifiedid.com/docs/intro)
 It currently only handles the DSP part of UID2 (decrypting UID2 tokens in bid requests).
 
 ## Installation
-Add :ex_uid2 to the list of dependencies in mix.exs
+Add `:ex_uid2` to the list of dependencies in mix.exs
 
 ```elixir
 def deps do
   [
-      {:ex_uid2, "~> 0.1.0"}
+      {:ex_uid2, "~> 0.2.0"}
   ]
 end
 ```
@@ -47,8 +47,8 @@ ExUid2.Dsp.decrypt_token(<redacted>)
      keyset_id: nil
    },
    identity_scope: "UID2",
-   identity_type: nil,
-   advertising_token_version: 2,
+   identity_type: :email,
+   version: 3,
    expires: ~U[2024-07-06 19:12:10.313Z]
  }}
 ```
@@ -68,22 +68,33 @@ shown to work for decoding encrypted UID2 tokens.
 
 ### General flow
 1. A keyring is periocically updated by querying the `/v2/key/sharing` endpoint.
-2. The encrypted token envelope is fetched from the bid request
-3. The envelope is parsed to extract the token version, the master key ID, the master IV and the master payload
-4. The right key to decrypt the master payload is obtained by looking up the master key ID in the keyring.
-5. The master payload is decrypted using AES-256-CBC, the master key and the master IV.
-6. The decrypted master payload is parsed to extract the expiration timestamp, the site key ID, the identity IV and the identity payload.
-7. The expiration timestamp is checked to ensure the token is still valid.
-8. The right key to decrypt the identity is obtained by looking up the site key ID in the keyring.
-9. The indentity payload is decrypted using AES-256-CBC, the site key and the identity IV.
-10. The decrypted identity payload is parsed to extract the site ID, the identity length, the identity binary and the established timestamp.
+2. The encrypted token envelope is fetched from the bid request.
+3. The token is base64 decoded.
+4. The envelope is parsed to extract the token version and other info necessary for decryption.
+5. The master key ID parsed from the envelope is used to get the master key from the keyring.
+6. The master payload is decrypted.
+7. The decrypted master payload is parsed to extract the expiration timestamp and other info necessary to decrypt the identity
+8. The expiration timestamp is checked to ensure the token is still valid.
+9. The site key ID parsed from the master payload is used to get the site key from the keyring.
+10. The indentity payload is decrypted.
 
 ### `/v2/key/sharing` request
 While the `/v2/key/sharing` endpoint is undocumented, The workflow to query UID2's endpoints is documented, the 
 [Encrypting Requests and Decrypting Responses](https://unifiedid.com/docs/getting-started/gs-encryption-decryption#encryption-and-decryption-code-examples) documentation seem to apply there. It is what 
 this library is doing.
 
-### Encrypted token envelope
+### V2 tokens
+1. The token is base64 decoded using the standard mode to get the envelope.
+2. The envelope is parsed to extract the token version, the master key ID, the master IV and the master payload
+3. The master key ID parsed from the envelope is used to get the master key from the keyring.
+4. The master payload is decrypted using AES-256-CBC, the master key and the master IV.
+5. The decrypted master payload is parsed to extract the expiration timestamp, the site key ID, the site IV and the identity payload.
+6. The expiration timestamp is checked to ensure the token is still valid.
+7. The site key ID parsed from the master payload is used to get the site key from the keyring.
+8. The indentity payload is decrypted using AES-256-CBC, the site key and the site IV.
+9. The decrypted identity payload is parsed to extract the site ID, the user ID length, the user ID binary and the established timestamp.
+
+#### V2 Encrypted token envelope
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
 | 0              | 1            | UID2 token version |
@@ -91,15 +102,15 @@ this library is doing.
 | 5              | 16           | Master 128-bit initialization vector (IV), which is used to randomize data encryption. |
 | 21             | N            | Master Payload (encrypted) |
 
-### Decrypted Master Payload
+#### V2 Decrypted Master Payload
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
 | 0              | 8            | Expiration time in milliseconds (Unix timestamp). Must be uint64 big endian. |
 | 8              | 4            | Site key ID. Must be uint32 big endian. |
 | 12             | 16           | Identity 128-bit initialization vector (IV), which is used to randomize data encryption. |
-| 28             | N            | Identity Payload (encrypted)
+| 28             | N            | Identity Payload (encrypted) |
 
-### Decrypted Identity
+#### V2 Decrypted Identity
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
 | 0              | 4            | Site ID. Must be uint32 big endian. |
@@ -108,3 +119,48 @@ this library is doing.
 | 8 + N          | 4            | Unknown. |
 | 12 + N         | 8            | Time when the identity was established in milliseconds (Unix timestamp). Must be uint64 big endian. |
 | 20 + N         | M            | Unknown. |
+
+### V3 Tokens
+1. The token is base64 decoded using the standard mode to get the envelope.
+2. The envelope is parsed to extract the token version, the identity type, master key ID and the master payload.
+3. The master key ID parsed from the envelope is used to get the master key from the keyring.
+4. The master payload is parsed and its data decrypted using AES-256-GCM and the master key.
+5. The decrypted master payload is parsed to extract the expiration timestamp, the site key ID, and the identity payload.
+6. The expiration timestamp is checked to ensure the token is still valid.
+7. The site key ID parsed from the master payload is used to get the site key from the keyring.
+8. The indentity payload is parsed and its data decrypted using AES-256-GCM and the site key.
+9. The decrypted identity payload is parsed to extract the site ID, the user ID binary and the established timestamp.
+
+#### V3 Encrypted token envelope
+| Offset (bytes) | Size (bytes) | Description |
+| -------------- | ------------ | ----------- |
+| 0              | 1            | Identity type byte. |
+| 1              | 1            | Version byte.  |
+| 2              | 4            | Master Key ID. Must be uint32 big endian. |
+| 6              | N            | Master Payload (encrypted) |
+
+#### V3 Decrypted Master Payload
+| Offset (bytes) | Size (bytes) | Description |
+| -------------- | ------------ | ----------- |
+| 0              | 8            | Expiration time in milliseconds (Unix timestamp). Must be uint64 big endian. |
+| 8              | 8            | Timestamp when the token was generated in milliseconds (Unix timestamp). Must be uint64 big endian. |
+| 16             | 4            | Operator Site ID (unused) |
+| 20             | 1            | Operator Type (unused) |
+| 21             | 4            | Operator Version (unused) |
+| 25             | 4            | Operator Key ID (unused) |
+| 29             | 4            | Site key ID. Must be uint32 big endian. |
+| 33             | N            | Identity Payload (encrypted) |
+
+#### V3 Decrypted Identity
+| Offset (bytes) | Size (bytes) | Description |
+| -------------- | ------------ | ----------- |
+| 0              | 4            | Site ID. Must be uint32 big endian. |
+| 4              | 8            | Publisher ID. Must be uint64 big endian. |
+| 12             | 4            | Client Key ID (unused) |
+| 16             | 4            | Privacy Bits (unused) |
+| 20             | 8            | Time when the identity was established in milliseconds (Unix timestamp). Must be uint64 big endian. |
+| 28             | 8            | Unknown. |
+| 36             | N            | Base64-encoded ID binary (the actual user ID). |
+
+### V4 tokens
+V4 tokens are exactly like V3 tokens, but are base64 encoded using the `urlsafe` mode.
