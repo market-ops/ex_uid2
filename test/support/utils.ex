@@ -40,13 +40,16 @@ defmodule Test.Support.Utils do
   def make_token(keyring, opts \\ %{}) do
     default_token_opts = %{
       expires_ms: :os.system_time(:millisecond) + 10_000,
-      uid: email_uid()
+      uid: email_uid(),
+      version: 2,
+      identity_type: :email
     }
 
     opts = Map.merge(default_token_opts, opts)
+    uid2 = ExUid2.Uid2.new(opts)
 
     {:ok, token} =
-      ExUid2.Encryption.encrypt_v2_token(opts.uid, keyring, 1, 2, opts.expires_ms)
+      ExUid2.Encryption.encrypt_token(uid2, keyring, 1, 2)
 
     token
   end
