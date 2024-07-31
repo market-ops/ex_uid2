@@ -1,6 +1,14 @@
 defmodule ExUid2.Dsp do
   @moduledoc """
   This is the client module for DSP-side decryption of UID2 tokens.
+
+  By default, when the `ExUid2` application starts, the `ExUid2.Dsp` server is started
+  with the `:active` mode, which refreshes the keyring every hour.
+
+  To manually control the keyring refresh calls, set the application
+  with the `runtime: false` option and start the `ExUid2.Dsp` server
+  with `ExUid2.Dsp.start_link(mode: :passive)`. Then, calling
+  `ExUid2.Dsp.refresh/0` will make the query and refresh the keyring.
   """
 
   alias ExUid2.Encryption
@@ -10,11 +18,73 @@ defmodule ExUid2.Dsp do
 
   @table_name __MODULE__
   @keyring :uid2_decryption_keyring
-  @refresh_rate_ms 5000
+  @refresh_rate_ms 3_600_000
 
   @default_opts [mode: :active]
 
   require Logger
+
+  @doc """
+  Attempts to decrypt a base64 encoded UID2 token.
+
+  ## Example
+      iex> ExUid2.Dsp.decrypt("A3AAAAABI2RPtp1P7Fa66cRLOHzi2gkK2kxIEWpwX+cWgsLITmLS+/q7kHCuHMPhtweLapy0p8IXaR6T4eGlF3iloOSwzPaJ+PMUiRwdLVb8perCP4AmlnPeAlndOGAJNTlaSvqb1tUdUJwpOzkQv6yjE9LoLUT/82QhKt92WIehEdSjJm/YpSgLdMWazqXPzyJjTZ+GIgJn2k6qHb33AGoe5YSrrkp91xWL2H6Ziw==")
+      {:ok,
+        %ExUid2.Uid2{
+          uid: "ywsvDNINiZOVSsfkHpLpSJzXzhr6Jx9Z/4Q0+lsEUvM=",
+          established_ms: 0,
+          site_id: 2,
+          site_key: %ExUid2.Keyring.Key{
+            activates_ms: 0,
+            created_ms: 0,
+            expires_ms: 1722448017227,
+            id: 2,
+            secret: <<32, 251, 7, 194, 132, 154, 250, 86, 202, 116, 104, 29, 131, 192,
+              139, 215, 48, 164, 11, 65, 226, 110, 167, 14, 108, 51, 254, 125, 65, 24,
+              23, 133>>,
+            keyset_id: nil
+          },
+          identity_scope: "UID2",
+          version: 3,
+          expires_ms: 1722448110794,
+          identity_type: :email
+        }}
+  """
+  @spec decrypt_token(binary(), non_neg_integer()) ::
+          {:ok, ExUid2.Uid2.t()} | {:error, Encryption.encryption_error()}
+  def decrypt_token(token, now_ms \\ :os.system_time(:millisecond)) do
+    # TODO: validate keys
+    case get_keyring() do
+      {:ok, keyring} ->
+        token
+        |> Encryption.decrypt_token(keyring, now_ms)
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Triggers a query to the Uid2 opperator server to get the latest keyring. Not required when the Dsp server is
+  started in `:active` mode (which is the default) or when `ExUid2.Dsp.start_refresh_loop/0` has been called.
+  """
+
+  @spec refresh() :: :ok | {:error, any()}
+  def refresh() do
+    GenServer.call(__MODULE__, :refresh)
+  end
+
+  @doc """
+  Starts hourly refreshing of the Keyring.
+
+  When the `ExUid2.Dsp` server is started with `mode: :passive`, it won't periodically query the Uid2 operator server to
+  refresh the keyring. Calling `ExUid2.Dsp.start_refresh_loop/0` will refresh the keyring and make the `ExUid2.Dsp` server
+  refresh it again every hour.
+  """
+  def start_refresh_loop() do
+    pid = GenServer.whereis(__MODULE__)
+    send(pid, :refresh)
+  end
 
   def start_link(opts \\ []) do
     genserver_opts = Keyword.merge(@default_opts, opts)
@@ -37,15 +107,6 @@ defmodule ExUid2.Dsp do
     end
 
     {:ok, %{fetch_keyring_attempts: 0}}
-  end
-
-  def refresh() do
-    GenServer.call(__MODULE__, :refresh)
-  end
-
-  def start_refresh_loop() do
-    pid = GenServer.whereis(__MODULE__)
-    send(pid, :refresh)
   end
 
   @impl GenServer
@@ -72,22 +133,6 @@ defmodule ExUid2.Dsp do
 
         Process.send_after(self(), :refresh, retry_time_ms)
         {:noreply, put_in(state.fetch_keyring_attempts, nb_attempts + 1)}
-    end
-  end
-
-  @doc """
-  Attempts to decrypt a base64 encoded token.
-  """
-  @spec decrypt_token(binary(), non_neg_integer()) :: {:ok, ExUid2.Uid2.t()} | {:error, any()}
-  def decrypt_token(token, now_ms \\ :os.system_time(:millisecond)) do
-    # TODO: validate keys
-    case get_keyring() do
-      {:ok, keyring} ->
-        token
-        |> Encryption.decrypt_token(keyring, now_ms)
-
-      error ->
-        error
     end
   end
 

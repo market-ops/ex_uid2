@@ -1,5 +1,7 @@
 defmodule ExUid2.Encryption do
-  @moduledoc false
+  @moduledoc """
+  Module responsible for performing encryption and decryption of Uid2 tokens.
+  """
 
   alias ExUid2.Encryption.EncryptedToken
   alias ExUid2.Encryption.Identity
@@ -7,9 +9,21 @@ defmodule ExUid2.Encryption do
   alias ExUid2.Uid2
   alias ExUid2.Keyring
 
+  @typedoc "Encryption error atom."
+  @type encryption_error ::
+   :base_64_decoding_error
+   | :cannot_decrypt_payload
+   | :invalid_master_payload
+   | :invalid_v2_identity_payload
+   | :invalid_v3_identity_payload
+   | :no_keyring_stored
+   | :not_authorized_for_master_key
+   | :not_authorized_for_site_key
+   | :token_expired
+
   @type secret_key :: <<_::256>>
 
-  @spec decrypt_token(binary(), Keyring.t(), non_neg_integer()) :: {:ok, Uid2.t()} | {:error, any()}
+  @spec decrypt_token(binary(), Keyring.t(), non_neg_integer()) :: {:ok, Uid2.t()} | {:error, encryption_error()}
   def decrypt_token(token_bin, keyring, now_ms \\ :os.system_time(:millisecond)) do
     with {:decoded_token, {:ok, decoded_token_bin}} <- {:decoded_token, decode_token(token_bin)},
          {:parsed_token, {:ok, token}} <- {:parsed_token, EncryptedToken.parse_token(decoded_token_bin)},

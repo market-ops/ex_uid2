@@ -1,8 +1,10 @@
 defmodule ExUid2.Uid2 do
   @moduledoc """
-  Struct holding the decrypted and parsed UID2 token
+  Struct holding the decrypted and parsed UID2 token.
+  """
 
-  Fields:
+  @typedoc """
+  Struct holding the decrypted and parsed UID2 token.
 
   * `:uid` - User's unique ID. This should always be a 44 bytes base64-encoded hashed ID.
 

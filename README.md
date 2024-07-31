@@ -62,9 +62,9 @@ ExUid2.Dsp.decrypt_token(<redacted>)
 
 ## Token decryption specification
 Since no specification for the token decryption protocol could be found, the decryption
-protocol has been found by reverse engineering the existing SDKs and may include errors
-and misconceptions, so this specification may be erroneous or incomplete, but has been
-shown to work for decoding encrypted UID2 tokens.
+protocol has been guessed by reverse engineering the existing SDKs. It may include errors
+and misconceptions, so this specification is likely to be erroneous or incomplete. However, it has been
+shown to work for decoding encrypted UID2 tokens in a production environment.
 
 ### General flow
 1. A keyring is periocically updated by querying the `/v2/key/sharing` endpoint.
