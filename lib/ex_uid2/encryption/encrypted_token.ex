@@ -6,7 +6,7 @@ defmodule ExUid2.Encryption.EncryptedToken do
           master_key_id: non_neg_integer(),
           master_iv: nil | <<_::128>>,
           master_payload: binary(),
-          identity_type: nil | :phone | :email
+          identity_type: :unknown | :phone | :email
         }
 
   defstruct [
@@ -14,7 +14,7 @@ defmodule ExUid2.Encryption.EncryptedToken do
     :master_key_id,
     :master_payload,
     master_iv: nil,
-    identity_type: nil
+    identity_type: :unknown
   ]
 
   @spec(parse_token(binary()) :: {:ok, t()}, {:error, :invalid_token})

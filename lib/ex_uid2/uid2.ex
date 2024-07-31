@@ -14,7 +14,7 @@ defmodule ExUid2.Uid2 do
 
   * `identity_scope` - The identity scope found in the keyring (should probably always be "UID2").
 
-  * `identity_type` - Whether this is an hashed email or phone number.
+  * `identity_type` - Whether this is an hashed email or phone number. Will be `:unknown` for V2 tokens.
 
   * `version` - The advertising token version.
 
@@ -27,7 +27,7 @@ defmodule ExUid2.Uid2 do
           site_id: non_neg_integer(),
           site_key: ExUid2.Keyring.Key.t(),
           identity_scope: binary(),
-          identity_type: any(),
+          identity_type: :phone | :email | :unknown,
           version: non_neg_integer(),
           expires_ms: non_neg_integer()
         }
@@ -38,9 +38,9 @@ defmodule ExUid2.Uid2 do
     :site_id,
     :site_key,
     :identity_scope,
-    :identity_type,
     :version,
-    :expires_ms
+    :expires_ms,
+    identity_type: :unknown
   ]
 
   def new(map) do
