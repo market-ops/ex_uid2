@@ -1,14 +1,15 @@
 defmodule ExUid2.Keyring do
   @moduledoc """
   Struct holding the keys periodically fetched from the UID2 operator server.
+  """
 
-  Fields:
+  @typedoc """
+  Struct holding the keys periodically fetched from the UID2 operator server.
 
   * `:keys` - The list of available keys
 
   * `:info` - Other information provided via the UID2 operator server's `/v2/keys/sharing` endpoint
   """
-
   @type t :: %__MODULE__{
           keys: %{non_neg_integer() => __MODULE__.Key.t()},
           info: __MODULE__.Info.t()
@@ -22,8 +23,10 @@ defmodule ExUid2.Keyring do
   defmodule Key do
     @moduledoc """
     Struct holding the information for a given key.
+    """
 
-    Fields:
+    @typedoc """
+    Struct holding the information for a given key.
 
     * `:activates_ms` - Time when the key becomes active (Unix timestamp in milliseconds)
 
@@ -33,7 +36,7 @@ defmodule ExUid2.Keyring do
 
     * `:secret` - That key's secret that must be used to decrypt the UID2 tokens.
 
-    * `keyset_id - Unknown
+    * `keyset_id` - Unknown
     """
     @type t :: %__MODULE__{
             activates_ms: non_neg_integer(),

@@ -1,6 +1,5 @@
 defmodule Test.Api.SharingTest do
   use ExUnit.Case, async: true
-  doctest ExUid2.Dsp
 
   alias ExUid2.Api.Sharing
   alias Test.Support.Utils
