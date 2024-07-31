@@ -110,7 +110,7 @@ this library is doing.
 | 12             | 16           | Identity 128-bit initialization vector (IV), which is used to randomize data encryption. |
 | 28             | N            | Identity Payload (encrypted) |
 
-#### V2 Decrypted Identity
+#### V2 Decrypted Identity Payload
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
 | 0              | 4            | Site ID. Must be uint32 big endian. |
@@ -151,7 +151,7 @@ this library is doing.
 | 29             | 4            | Site key ID. Must be uint32 big endian. |
 | 33             | N            | Identity Payload (encrypted) |
 
-#### V3 Decrypted Identity
+#### V3 Decrypted Identity Payload
 | Offset (bytes) | Size (bytes) | Description |
 | -------------- | ------------ | ----------- |
 | 0              | 4            | Site ID. Must be uint32 big endian. |

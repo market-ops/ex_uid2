@@ -24,14 +24,14 @@ defmodule ExUid2.Encryption.Identity do
 
   @spec decrypt(MasterPayload.t(), Key.t()) :: {:ok, t()} | {:error, any()}
   def decrypt(%MasterPayload{version: 2} = master_payload, key) do
-    %MasterPayload{site_iv: site_iv, site_payload: site_payload} = master_payload
+    %MasterPayload{identity_iv: identity_iv, identity_payload: identity_payload} = master_payload
 
-    :crypto.crypto_one_time(:aes_256_cbc, key.secret, site_iv, site_payload, false)
+    :crypto.crypto_one_time(:aes_256_cbc, key.secret, identity_iv, identity_payload, false)
     |> parse_v2()
   end
 
   def decrypt(%MasterPayload{version: 3} = master_payload, key) do
-    payload = master_payload.site_payload
+    payload = master_payload.identity_payload
     payload_size = byte_size(payload)
     encrypted_data_size = payload_size - (@nonce_size + @tag_size)
 
@@ -47,7 +47,7 @@ defmodule ExUid2.Encryption.Identity do
     end
   end
 
-  @spec parse_v2(binary()) :: {:ok, t()} | {:error, :invalid_v2_site_payload}
+  @spec parse_v2(binary()) :: {:ok, t()} | {:error, :invalid_v2_identity_payload}
   def parse_v2(
         <<site_id::big-integer-32, id_len::big-integer-32, id_bin::binary-size(id_len),
           _::binary-size(4), established_ms::big-integer-64, _::binary>>
@@ -64,9 +64,9 @@ defmodule ExUid2.Encryption.Identity do
     }
   end
 
-  def parse_v2(_), do: {:error, :invalid_v2_site_payload}
+  def parse_v2(_), do: {:error, :invalid_v2_identity_payload}
 
-  @spec parse_v3(binary()) :: {:ok, t()} | {:error, :invalid_v3_site_payload}
+  @spec parse_v3(binary()) :: {:ok, t()} | {:error, :invalid_v3_identity_payload}
   def parse_v3(
         <<site_id::big-integer-32, _publisher_id::big-integer-64, _client_key_id::big-integer-32,
           _privacy_bits::binary-4, established_ms::big-integer-64, _unknown::binary-8,
@@ -81,7 +81,7 @@ defmodule ExUid2.Encryption.Identity do
      }}
   end
 
-  def parse_v3(_), do: {:error, :invalid_v3_site_payload}
+  def parse_v3(_), do: {:error, :invalid_v3_identity_payload}
 
   @spec make_envelope(t()) :: binary()
   defp make_envelope(%__MODULE__{

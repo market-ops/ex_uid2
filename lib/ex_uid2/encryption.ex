@@ -56,7 +56,7 @@ defmodule ExUid2.Encryption do
     identity = %Identity{version: 2, site_id: site_key_id, established_ms: 0, id_bin: id_bin, id_len: byte_size(id_bin)}
     encrypted_identity = Identity.encrypt(identity, site_key, identity_iv)
 
-    master_payload = %MasterPayload{version: 2, site_key_id: site_key_id, site_iv: identity_iv, site_payload: encrypted_identity, expires_ms: expires_ms}
+    master_payload = %MasterPayload{version: 2, site_key_id: site_key_id, identity_iv: identity_iv, identity_payload: encrypted_identity, expires_ms: expires_ms}
     master_iv = :crypto.strong_rand_bytes(16)
     encrypted_master_payload = MasterPayload.encrypt(master_payload, master_key, master_iv)
     encrypted_token = %EncryptedToken{version: 2, master_key_id: master_key_id, master_iv: master_iv, master_payload: encrypted_master_payload}
@@ -96,7 +96,7 @@ defmodule ExUid2.Encryption do
       identity = %Identity{version: version, site_id: site_key_id, established_ms: 0, id_bin: id_bin}
       encrypted_identity = Identity.encrypt(identity, site_key)
 
-      master_payload = %MasterPayload{version: version, site_key_id: site_key_id, site_payload: encrypted_identity, expires_ms: expires_ms}
+      master_payload = %MasterPayload{version: version, site_key_id: site_key_id, identity_payload: encrypted_identity, expires_ms: expires_ms}
       encrypted_master_payload = MasterPayload.encrypt(master_payload, master_key)
       encrypted_token = %EncryptedToken{version: version, master_key_id: master_key_id, master_payload: encrypted_master_payload, identity_type: identity_type}
       {:ok, EncryptedToken.make_v3_token_envelope(encrypted_token)}
