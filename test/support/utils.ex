@@ -46,6 +46,18 @@ defmodule Test.Support.Utils do
     }
 
     opts = Map.merge(default_token_opts, opts)
+
+    opts =
+      case opts[:version] do
+        2 ->
+          opts
+
+        _ ->
+          uid = opts[:uid]
+          decoded_uid = :base64.decode(uid)
+          Map.put(opts, :uid, decoded_uid)
+      end
+
     uid2 = ExUid2.Uid2.new(opts)
 
     {:ok, token} =

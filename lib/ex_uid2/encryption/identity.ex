@@ -76,7 +76,7 @@ defmodule ExUid2.Encryption.Identity do
      %__MODULE__{
        version: 3,
        site_id: site_id,
-       id_bin: id_bin,
+       id_bin: id_bin |> :base64.encode(),
        established_ms: established_ms
      }}
   end
