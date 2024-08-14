@@ -16,7 +16,10 @@ defmodule ExUid2.MixProject do
       description: description(),
       package: package(),
       aliases: aliases(),
-      source_url: @source_url
+      source_url: @source_url,
+      dialyzer: [
+        plt_add_apps: [:mix]
+      ]
     ]
   end
 
