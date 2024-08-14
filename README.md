@@ -67,7 +67,7 @@ and misconceptions, so this specification is likely to be erroneous or incomplet
 shown to work for decoding encrypted UID2 tokens in a production environment.
 
 ### General flow
-1. A keyring is periocically updated by querying the `/v2/key/sharing` endpoint.
+1. A keyring is periocically updated by querying the `/v2/key/bidstream` endpoint.
 2. The encrypted token envelope is fetched from the bid request.
 3. The token is base64 decoded.
 4. The envelope is parsed to extract the token version and other info necessary for decryption.
@@ -78,8 +78,8 @@ shown to work for decoding encrypted UID2 tokens in a production environment.
 9. The site key ID parsed from the master payload is used to get the site key from the keyring.
 10. The indentity payload is decrypted.
 
-### `/v2/key/sharing` request
-While the `/v2/key/sharing` endpoint is undocumented, The workflow to query UID2's endpoints is documented, the 
+### `/v2/key/bidstream` request
+While the `/v2/key/bidstream` endpoint is undocumented, The workflow to query UID2's endpoints is documented, the 
 [Encrypting Requests and Decrypting Responses](https://unifiedid.com/docs/getting-started/gs-encryption-decryption#encryption-and-decryption-code-examples) documentation seem to apply there. It is what 
 this library is doing.
 

@@ -8,7 +8,7 @@ defmodule ExUid2.Keyring do
 
   * `:keys` - The list of available keys
 
-  * `:info` - Other information provided via the UID2 operator server's `/v2/keys/sharing` endpoint
+  * `:info` - Other information provided via the UID2 operator server's `/v2/keys/bidstream` endpoint
   """
   @type t :: %__MODULE__{
           keys: %{non_neg_integer() => __MODULE__.Key.t()},
@@ -72,7 +72,9 @@ defmodule ExUid2.Keyring do
   end
 
   defmodule Info do
-    @moduledoc false
+    @moduledoc """
+    Struct holding information about the keyring.
+    """
     @type t :: %__MODULE__{}
     defstruct [
       :identity_scope,
