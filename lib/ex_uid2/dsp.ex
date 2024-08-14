@@ -148,7 +148,7 @@ defmodule ExUid2.Dsp do
   end
 
   defp refresh_keyring() do
-    case Api.Sharing.fetch_keyring() do
+    case Api.Bidstream.fetch_keyring() do
       {:ok, fresh_keyring} ->
         :ets.insert(@table_name, {@keyring, fresh_keyring})
         :ok

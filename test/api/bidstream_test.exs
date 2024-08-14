@@ -1,7 +1,7 @@
-defmodule Test.Api.SharingTest do
+defmodule Test.Api.BidstreamTest do
   use ExUnit.Case, async: true
 
-  alias ExUid2.Api.Sharing
+  alias ExUid2.Api.Bidstream
   alias Test.Support.Utils
 
   test "fetch_keyring/0 sends the encrypted request, decrypts the response and parses the keyring " do
@@ -10,7 +10,7 @@ defmodule Test.Api.SharingTest do
     keyring_text = Utils.keyring_json(keyring_opts)
     Utils.prepare_response(keyring_text)
 
-    {:ok, keyring} = Sharing.fetch_keyring()
+    {:ok, keyring} = Bidstream.fetch_keyring()
 
     expected_keyring = Utils.keyring(keyring_opts)
     assert match?(^expected_keyring, keyring)
@@ -18,7 +18,7 @@ defmodule Test.Api.SharingTest do
 
   test "fetch_keyring/0 returns an error if the request fails" do
     Req.Test.expect(ExUid2.Dsp, &Plug.Conn.send_resp(&1, 500, "internal server error"))
-    response = Sharing.fetch_keyring()
+    response = Bidstream.fetch_keyring()
     assert match?({:error, %Req.Response{status: 500}}, response)
   end
 
@@ -26,7 +26,7 @@ defmodule Test.Api.SharingTest do
     invalid_text = ~S'{"wrong":"format"}'
     Utils.prepare_response(invalid_text)
 
-    response = Sharing.fetch_keyring()
+    response = Bidstream.fetch_keyring()
     assert match?({:error, {:unexpected_response, _}}, response)
   end
 end

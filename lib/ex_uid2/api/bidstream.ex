@@ -1,18 +1,18 @@
-defmodule ExUid2.Api.Sharing do
+defmodule ExUid2.Api.Bidstream do
   @moduledoc """
-  This module provides the interface for the DSP to access the UID2 Operator Services's key sharing endpoint.
+  This module provides the interface for the DSP to access the UID2 Operator Services's key bidstream endpoint.
   """
   alias ExUid2.Api
   alias ExUid2.Keyring
 
-  @key_sharing_path "/v2/key/sharing"
+  @bidstream_path "/v2/key/bidstream"
 
   @doc """
   Request the decryption keys necessary to decrypt UID2 tokens.
   """
   @spec fetch_keyring() :: {:ok, Keyring.t()} | {:error, any()}
   def fetch_keyring() do
-    case Api.post_encrypted_request(@key_sharing_path, "") do
+    case Api.post_encrypted_request(@bidstream_path, "") do
       {:ok, %{"status" => "success", "body" => body}} ->
         {:ok, Keyring.new(body)}
 
