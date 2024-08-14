@@ -60,6 +60,15 @@ ExUid2.Dsp.decrypt_token(<redacted>)
 {:error, :no_keyring_stored}
 ```
 
+## Mix Task
+Tokens can be decrypted from the shell via the `decrypt` mix task:
+
+```elixir
+mix decrypt <redacted>
+
+{:ok, %ExUid2.Uid2{uid: <redacted>, established_ms: 1721997317496, site_id: 262, site_key: %ExUid2.Keyring.Key{activates_ms: 1717193463, created_ms: 1717107063, expires_ms: 1725833463, id: 2316, secret: <redacted>, keyset_id: nil}, identity_scope: "UID2", version: 4, expires_ms: 1722256517496, identity_type: :phone}}
+```
+
 ## Token decryption specification
 Since no specification for the token decryption protocol could be found, the decryption
 protocol has been guessed by reverse engineering the existing SDKs. It may include errors
