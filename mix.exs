@@ -2,7 +2,7 @@ defmodule ExUid2.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/market-ops/ex_uid2"
-  @version "0.2.2"
+  @version "0.2.3"
 
   def project do
     [
