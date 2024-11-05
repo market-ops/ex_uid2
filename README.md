@@ -173,3 +173,10 @@ this library is doing.
 
 ### V4 tokens
 V4 tokens are exactly like V3 tokens, but are base64 encoded using the `urlsafe` mode.
+
+## Benchmarks
+Benchmarks can be run with the `:bench` env:
+
+```
+MIX_ENV=bench mix run benchmarks/keyring.exs --no-start
+```

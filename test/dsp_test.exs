@@ -57,6 +57,7 @@ defmodule Test.Dsp do
   end
 
   defp prepare_dsp(opts) do
+    :persistent_term.erase(Dsp.persistent_term_key())
     keyring_text = Utils.keyring_json(opts)
     Utils.prepare_response(keyring_text)
     {:ok, pid} = Dsp.start_link(mode: :passive)

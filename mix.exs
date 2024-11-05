@@ -36,7 +36,9 @@ defmodule ExUid2.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: [:dev], runtime: false},
       {:req, "~> 0.5"},
-      {:plug, "~> 1.16", only: [:test], runtime: false}
+      {:plug, "~> 1.16", only: [:test], runtime: false},
+      {:benchee, "~> 1.3.1", only: :bench},
+      {:foil, git: "https://github.com/lpgauth/foil.git", tag: "0.1.3", only: :bench}
     ]
   end
 

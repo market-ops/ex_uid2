@@ -16,8 +16,7 @@ defmodule ExUid2.Dsp do
   alias ExUid2.Api
   use GenServer
 
-  @table_name __MODULE__
-  @keyring :uid2_decryption_keyring
+  @keyring_key {__MODULE__, :uid2_decryption_keyring}
   @refresh_rate_ms 3_600_000
 
   @default_opts [mode: :active]
@@ -100,8 +99,6 @@ defmodule ExUid2.Dsp do
 
   @impl GenServer
   def init(opts) do
-    :ets.new(@table_name, [:named_table, {:read_concurrency, true}, :public])
-
     if opts[:mode] == :active do
       send(self(), :refresh)
     end
@@ -136,13 +133,18 @@ defmodule ExUid2.Dsp do
     end
   end
 
+  # For tests
+  def persistent_term_key() do
+    @keyring_key
+  end
+
   @spec get_keyring() :: {:ok, Keyring.t()} | {:error, :no_keyring_stored}
   defp get_keyring() do
-    case :ets.lookup(@table_name, @keyring) do
-      [{@keyring, keyring}] ->
-        {:ok, keyring}
-
-      [] ->
+    try do
+      keyring = :persistent_term.get(@keyring_key)
+      {:ok, keyring}
+    rescue
+      ArgumentError ->
         {:error, :no_keyring_stored}
     end
   end
@@ -150,8 +152,7 @@ defmodule ExUid2.Dsp do
   defp refresh_keyring() do
     case Api.Bidstream.fetch_keyring() do
       {:ok, fresh_keyring} ->
-        :ets.insert(@table_name, {@keyring, fresh_keyring})
-        :ok
+        :persistent_term.put(@keyring_key, fresh_keyring)
 
       error ->
         error
