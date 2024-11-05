@@ -10,7 +10,7 @@ Add `:ex_uid2` to the list of dependencies in mix.exs
 ```elixir
 def deps do
   [
-      {:ex_uid2, "~> 0.2.2"}
+      {:ex_uid2, "~> 0.2.3"}
   ]
 end
 ```
