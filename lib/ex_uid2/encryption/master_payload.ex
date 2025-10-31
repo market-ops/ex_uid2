@@ -39,15 +39,27 @@ defmodule ExUid2.Encryption.MasterPayload do
     payload_size = byte_size(payload)
     encrypted_data_size = payload_size - (@nonce_size + @tag_size)
 
-    <<nonce::binary-size(@nonce_size), data::binary-size(encrypted_data_size),
-      tag::binary-size(@tag_size)>> = payload
+    with {:parse_payload,
+          <<nonce::binary-size(@nonce_size), data::binary-size(encrypted_data_size),
+            tag::binary-size(@tag_size)>>} <- {:parse_payload, payload},
+         {:decrypt, {:ok, decrypted_bin}} <- {:decrypt, decrypt(key, nonce, data, tag)} do
+      parse_v3(decrypted_bin)
+    else
+      {:parse_payload, _} ->
+        {:error, :cannot_parse_encrypted_payload}
 
+      {:decrypt, error} ->
+        error
+    end
+  end
+
+  defp decrypt(key, nonce, data, tag) do
     case :crypto.crypto_one_time_aead(:aes_256_gcm, key.secret, nonce, data, <<>>, tag, false) do
       :error ->
         {:error, :cannot_decrypt_payload}
 
       decrypted_bin ->
-        parse_v3(decrypted_bin)
+        {:ok, decrypted_bin}
     end
   end
 
