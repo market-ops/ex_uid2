@@ -12,6 +12,6 @@ defmodule Test.Encryption.MasterPayload do
 
     token = %EncryptedToken{version: 3, master_payload: master_payload}
 
-    {:error, :cannot_parse_encrypted_payload} = MasterPayload.decrypt(token, key)
+    {:error, :cannot_parse_encrypted_master_payload} = MasterPayload.decrypt(token, key)
   end
 end

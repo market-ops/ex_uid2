@@ -46,7 +46,7 @@ defmodule ExUid2.Encryption.MasterPayload do
       parse_v3(decrypted_bin)
     else
       {:parse_payload, _} ->
-        {:error, :cannot_parse_encrypted_payload}
+        {:error, :cannot_parse_encrypted_master_payload}
 
       {:decrypt, error} ->
         error

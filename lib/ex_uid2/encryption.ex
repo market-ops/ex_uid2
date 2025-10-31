@@ -14,6 +14,7 @@ defmodule ExUid2.Encryption do
    :base_64_decoding_error
    | :cannot_decrypt_payload
    | :invalid_master_payload
+   | :cannot_parse_encrypted_master_payload
    | :invalid_v2_identity_payload
    | :invalid_v3_identity_payload
    | :no_keyring_stored
